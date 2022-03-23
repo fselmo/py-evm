@@ -49,6 +49,7 @@ from eth.vm.forks import (
     PetersburgVM,
     SpuriousDragonVM,
     TangerineWhistleVM,
+    MergeVM,
 )
 
 
@@ -120,6 +121,7 @@ MAINNET_VMS = (
     LondonVM,
     ArrowGlacierVM,
     GrayGlacierVM,
+    MergeVM,
 )
 
 MAINNET_VM_CONFIGURATION = tuple(zip(MAINNET_FORK_BLOCKS, MAINNET_VMS))

@@ -1,4 +1,5 @@
 from eth.vm.computation import BaseComputation
+from eth_utils import to_bytes
 
 
 def blockhash(computation: BaseComputation) -> None:
@@ -31,3 +32,7 @@ def gaslimit(computation: BaseComputation) -> None:
 
 def basefee(computation: BaseComputation) -> None:
     computation.stack_push_int(computation.state.base_fee)
+
+
+def mixhash(computation: BaseComputation) -> None:
+    computation.stack_push_bytes(to_bytes(computation.state.mix_hash))

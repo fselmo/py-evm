@@ -5,6 +5,7 @@ import pytest
 import rlp
 
 from eth.exceptions import UnrecognizedTransactionType
+from eth.vm.forks.merge.transactions import MergeTransactionBuilder
 from eth_utils import (
     is_same_address,
     to_tuple,
@@ -101,7 +102,7 @@ def fixture(fixture_data):
 def fixture_transaction_class(fixture_data):
     _, test_name, fork_name = fixture_data
 
-    # TODO: Address these accessList test issues in London and Berlin
+    # TODO: address these test issues in London, Berlin, and Merge
     if test_name in (
         "GasLimitPriceProductOverflowtMinusOne",
         "accessListStorage32Bytes",
@@ -131,10 +132,10 @@ def fixture_transaction_class(fixture_data):
         return BerlinTransactionBuilder
     elif fork_name == ForkName.London:
         return LondonTransactionBuilder
+    elif fork_name == "Merge":
+        return MergeTransactionBuilder
     elif fork_name == ForkName.Metropolis:
         pytest.skip("Metropolis Transaction class has not been implemented")
-    elif fork_name == "Merge":
-        pytest.skip("Merge Transaction class has not been implemented")
     else:
         raise ValueError(f"Unknown Fork Name: {fork_name}")
 

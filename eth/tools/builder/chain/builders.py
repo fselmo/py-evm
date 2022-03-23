@@ -76,6 +76,7 @@ from eth.vm.forks import (
     LondonVM,
     ArrowGlacierVM,
     GrayGlacierVM,
+    MergeVM,
 )
 
 
@@ -248,8 +249,9 @@ berlin_at = fork_at(BerlinVM)
 london_at = fork_at(LondonVM)
 arrow_glacier_at = fork_at(ArrowGlacierVM)
 gray_glacier_at = fork_at(GrayGlacierVM)
+merge_at = fork_at(MergeVM)
 
-latest_mainnet_at = gray_glacier_at
+latest_mainnet_at = merge_at
 
 GENESIS_DEFAULTS = cast(
     Tuple[Tuple[str, Union[BlockNumber, int, None, bytes, Address, Hash32]], ...],

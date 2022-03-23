@@ -12,6 +12,7 @@ from typing import (
 
 import logging
 
+from eth.consensus.pos import PosConsensus
 from eth_typing import (
     Address,
     BlockNumber,
@@ -454,10 +455,8 @@ class Chain(BaseChain):
             return self.gas_estimator(state, transaction)
 
     def import_block(self,
-                     block: BlockAPI,
-                     perform_validation: bool = True
-                     ) -> BlockImportResult:
-
+        block: BlockAPI, perform_validation: bool = True
+    ) -> BlockImportResult:
         try:
             parent_header = self.get_block_header_by_hash(block.header.parent_hash)
         except HeaderNotFound:
@@ -493,10 +492,7 @@ class Chain(BaseChain):
         if perform_validation:
             self.validate_block(block)
 
-        (
-            new_canonical_hashes,
-            old_canonical_hashes,
-        ) = self.chaindb.persist_block(block)
+        new_canonical_hashes, old_canonical_hashes = self.chaindb.persist_block(block)
 
         self.logger.debug(
             'Persisted block: number %s | hash %s',
@@ -544,7 +540,10 @@ class Chain(BaseChain):
 
     def validate_uncles(self, block: BlockAPI) -> None:
         has_uncles = len(block.uncles) > 0
-        should_have_uncles = block.header.uncles_hash != EMPTY_UNCLE_HASH
+        should_have_uncles = (
+            block.header.uncles_hash != EMPTY_UNCLE_HASH
+            and not isinstance(PosConsensus, self.get_vm().consensus_class)
+        )
 
         if not has_uncles and not should_have_uncles:
             # optimization to avoid loading ancestors from DB, since the block has no uncles
@@ -654,7 +653,8 @@ class MiningChain(Chain, MiningChainAPI):
                      perform_validation: bool = True
                      ) -> BlockImportResult:
         result = super().import_block(
-            block, perform_validation)
+            block, perform_validation
+        )
 
         self.header = self.ensure_header()
         return result

@@ -37,7 +37,7 @@ def sstore(computation: BaseComputation) -> None:
 
     computation.consume_gas(
         gas_cost, reason=(
-            f"SSTORE: {encode_hex(computation.msg.storage_address)}"
+            f"SSTORE: {encode_hex(computation.msg.storage_address)} "
             f"[{slot}] -> {value} ({current_value})"
         )
     )
@@ -124,7 +124,7 @@ def net_sstore(gas_schedule: NetSStoreGasSchedule, computation: BaseComputation)
     computation.consume_gas(
         gas_cost,
         reason=(
-            f"SSTORE: {encode_hex(computation.msg.storage_address)}"
+            f"SSTORE: {encode_hex(computation.msg.storage_address)} "
             f"[{slot}] -> {value} (current: {current_value} / original: {original_value})"
         )
     )

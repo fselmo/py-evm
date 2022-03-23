@@ -206,7 +206,7 @@ class HeaderDB(HeaderDatabaseAPI):
             header: BlockHeaderAPI,
             score: int
     ) -> int:
-        new_score = score + header.difficulty
+        new_score = score + header.block_number
 
         db.set(
             SchemaV1.make_block_hash_to_score_lookup_key(header.hash),
@@ -235,7 +235,7 @@ class HeaderDB(HeaderDatabaseAPI):
             b''.join(new_checkpoints),
         )
 
-        previous_score = score - header.difficulty
+        previous_score = score - header.block_number
         cls._set_hash_scores_to_db(db, header, previous_score)
         cls._set_as_canonical_chain_head(db, header, GENESIS_PARENT_HASH)
         _, gaps = cls._update_header_chain_gaps(db, header)
@@ -373,10 +373,7 @@ class HeaderDB(HeaderDatabaseAPI):
             score = cls._get_score(db, first_header.parent_hash)
 
         curr_chain_head = first_header
-        db.set(
-            curr_chain_head.hash,
-            rlp.encode(curr_chain_head),
-        )
+        db.set(curr_chain_head.hash, rlp.encode(curr_chain_head))
         score = cls._set_hash_scores_to_db(db, curr_chain_head, score)
 
         base_gaps = cls._get_header_chain_gaps(db)

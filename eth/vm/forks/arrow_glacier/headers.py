@@ -1,10 +1,10 @@
 from eth.vm.forks.london.headers import (
     create_header_from_parent,
 )
-from eth.vm.forks.petersburg.headers import (
+from eth.vm.forks.byzantium.headers import (
     compute_difficulty,
 )
-from eth.vm.forks.istanbul.headers import (
+from eth.vm.forks.byzantium.headers import (
     configure_header,
 )
 

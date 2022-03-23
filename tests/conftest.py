@@ -35,6 +35,7 @@ from eth.vm.forks import (
     LondonVM,
     ArrowGlacierVM,
     GrayGlacierVM,
+    MergeVM,
 )
 
 #
@@ -83,22 +84,21 @@ def _file_logging(request):
 
 
 @pytest.fixture(params=[
-                FrontierVM,
-                HomesteadVM.configure(
-                    support_dao_fork=False,
-                ),
-                TangerineWhistleVM,
-                SpuriousDragonVM,
-                ByzantiumVM,
-                ConstantinopleVM,
-                PetersburgVM,
-                IstanbulVM,
-                MuirGlacierVM,
-                BerlinVM,
-                LondonVM,
-                ArrowGlacierVM,
-                GrayGlacierVM,
-                ])
+    FrontierVM,
+    HomesteadVM.configure(support_dao_fork=False),
+    TangerineWhistleVM,
+    SpuriousDragonVM,
+    ByzantiumVM,
+    ConstantinopleVM,
+    PetersburgVM,
+    IstanbulVM,
+    MuirGlacierVM,
+    BerlinVM,
+    LondonVM,
+    ArrowGlacierVM,
+    GrayGlacierVM,
+    MergeVM,
+])
 def VM(request):
     return request.param
 

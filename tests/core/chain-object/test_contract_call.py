@@ -32,6 +32,7 @@ from eth.vm.forks import (
     LondonVM,
     ArrowGlacierVM,
     GrayGlacierVM,
+    MergeVM,
 )
 
 
@@ -275,6 +276,16 @@ def test_get_transaction_result(
         ),
         (
             GrayGlacierVM,
+            'useLotsOfGas()',
+            OutOfGas,
+        ),
+        (
+            MergeVM,
+            'doRevert()',
+            Revert,
+        ),
+        (
+            MergeVM,
             'useLotsOfGas()',
             OutOfGas,
         ),

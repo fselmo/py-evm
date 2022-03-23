@@ -21,6 +21,8 @@ from eth_typing import (
     Hash32,
 )
 from eth_utils import (
+    ExtendedDebugLogger,
+    get_extended_debug_logger,
     ValidationError,
 )
 import rlp
@@ -97,11 +99,13 @@ class VM(Configurable, VirtualMachineAPI):
 
     cls_logger = logging.getLogger('eth.vm.base.VM')
 
-    def __init__(self,
-                 header: BlockHeaderAPI,
-                 chaindb: ChainDatabaseAPI,
-                 chain_context: ChainContextAPI,
-                 consensus_context: ConsensusContextAPI) -> None:
+    def __init__(
+        self,
+        header: BlockHeaderAPI,
+        chaindb: ChainDatabaseAPI,
+        chain_context: ChainContextAPI,
+        consensus_context: ConsensusContextAPI,
+    ) -> None:
         self.chaindb = chaindb
         self.chain_context = chain_context
         self.consensus_context = consensus_context
@@ -146,8 +150,8 @@ class VM(Configurable, VirtualMachineAPI):
     # Logging
     #
     @property
-    def logger(self) -> logging.Logger:
-        return logging.getLogger(f'eth.vm.base.VM.{self.__class__.__name__}')
+    def logger(self) -> ExtendedDebugLogger:
+        return get_extended_debug_logger(f'eth.vm.base.VM.{self.__class__.__name__}')
 
     #
     # Execution
@@ -168,34 +172,31 @@ class VM(Configurable, VirtualMachineAPI):
         return receipt, computation
 
     @classmethod
-    def create_execution_context(cls,
-                                 header: BlockHeaderAPI,
-                                 prev_hashes: Iterable[Hash32],
-                                 chain_context: ChainContextAPI) -> ExecutionContextAPI:
+    def create_execution_context(
+        cls,
+        header: BlockHeaderAPI,
+        prev_hashes: Iterable[Hash32],
+        chain_context: ChainContextAPI,
+    ) -> ExecutionContextAPI:
         fee_recipient = cls.consensus_class.get_fee_recipient(header)
+
+        _fields = {
+            "coinbase": fee_recipient,
+            "timestamp": header.timestamp,
+            "block_number": header.block_number,
+            "difficulty": header.difficulty,
+            "mix_hash": header.mix_hash,
+            "gas_limit": header.gas_limit,
+            "prev_hashes": prev_hashes,
+            "chain_id": chain_context.chain_id,
+        }
+
         try:
-            base_fee = header.base_fee_per_gas
+            _fields["base_fee_per_gas"] = header.base_fee_per_gas
         except AttributeError:
-            return ExecutionContext(
-                coinbase=fee_recipient,
-                timestamp=header.timestamp,
-                block_number=header.block_number,
-                difficulty=header.difficulty,
-                gas_limit=header.gas_limit,
-                prev_hashes=prev_hashes,
-                chain_id=chain_context.chain_id,
-            )
-        else:
-            return ExecutionContext(
-                coinbase=fee_recipient,
-                timestamp=header.timestamp,
-                block_number=header.block_number,
-                difficulty=header.difficulty,
-                gas_limit=header.gas_limit,
-                prev_hashes=prev_hashes,
-                chain_id=chain_context.chain_id,
-                base_fee_per_gas=base_fee,
-            )
+            pass
+
+        return ExecutionContext(**_fields)
 
     def execute_bytecode(self,
                          origin: Address,
@@ -292,22 +293,25 @@ class VM(Configurable, VirtualMachineAPI):
                 f" the attempted block was #{block.number}"
             )
 
+        header_fields = {
+            "coinbase": block.header.coinbase,
+            "difficulty": block.header.difficulty,
+            "gas_limit": block.header.gas_limit,
+            "timestamp": block.header.timestamp,
+            "extra_data": block.header.extra_data,
+            "mix_hash": block.header.mix_hash,
+            "nonce": block.header.nonce,
+            "uncles_hash": keccak(rlp.encode(block.uncles)),
+        }
+
         self._block = self.get_block().copy(
-            header=self.configure_header(
-                coinbase=block.header.coinbase,
-                difficulty=block.header.difficulty,
-                gas_limit=block.header.gas_limit,
-                timestamp=block.header.timestamp,
-                extra_data=block.header.extra_data,
-                mix_hash=block.header.mix_hash,
-                nonce=block.header.nonce,
-                uncles_hash=keccak(rlp.encode(block.uncles)),
-            ),
+            header=self.configure_header(**header_fields),
             uncles=block.uncles,
         )
 
         execution_context = self.create_execution_context(
-            block.header, self.previous_hashes, self.chain_context)
+            block.header, self.previous_hashes, self.chain_context
+        )
 
         # Zero out the gas_used before applying transactions. Each applied transaction will
         #   increase the gas used in the final new_header.

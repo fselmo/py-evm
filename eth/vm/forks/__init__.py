@@ -37,3 +37,6 @@ from .arrow_glacier import (  # noqa: F401
 from .gray_glacier import (  # noqa: F401
     GrayGlacierVM,
 )
+from .merge import (  # noqa: F401
+    MergeVM,
+)

@@ -17,6 +17,7 @@ from eth.vm.forks import (
     BerlinVM,
     LondonVM,
     ArrowGlacierVM,
+    MergeVM,
 )
 from eth._utils.address import force_bytes_to_address
 
@@ -900,6 +901,78 @@ ADDR_1010 = force_bytes_to_address(b'\x10\x10')
             22272,
             id='sha3 precompile 32 bytes 1000_tolerance binary pending for ArrowGlacierVM',
         ),
+        pytest.param(
+            b'',
+            None,
+            ADDR_1010,
+            True,
+            MergeVM,
+            21000,
+            id='simple default pending for TheMergeVM',
+        ),
+        pytest.param(
+            b'',
+            None,
+            ADDR_1010,
+            False,
+            MergeVM,
+            21000,
+            id='simple default for TheMergeVM',
+        ),
+        pytest.param(
+            b'\xff' * 10,
+            None,
+            ADDR_1010,
+            True,
+            MergeVM,
+            21160,
+            id='10 bytes default pending for TheMergeVM',
+        ),
+        pytest.param(
+            b'\xff' * 10,
+            None,
+            ADDR_1010,
+            False,
+            MergeVM,
+            21160,
+            id='10 bytes default for TheMergeVM',
+        ),
+        pytest.param(
+            b'\xff' * 32,
+            None,
+            ADDRESS_2,
+            True,
+            MergeVM,
+            33675,
+            id='sha3 precompile 32 bytes default pending for TheMergeVM',
+        ),
+        pytest.param(
+            b'\xff' * 32,
+            None,
+            ADDRESS_2,
+            False,
+            MergeVM,
+            33687,
+            id='sha3 precompile 32 bytes default for TheMergeVM',
+        ),
+        pytest.param(
+            b'\xff' * 320,
+            None,
+            ADDRESS_2,
+            True,
+            MergeVM,
+            38265,
+            id='sha3 precompile 320 bytes default pending for TheMergeVM',
+        ),
+        pytest.param(
+            b'\xff' * 32,
+            binary_gas_search_1000_tolerance,
+            ADDRESS_2,
+            True,
+            MergeVM,
+            22272,
+            id='sha3 precompile 32 bytes 1000_tolerance binary pending for TheMergeVM',
+        ),
     ),
 )
 def test_estimate_gas(
@@ -962,6 +1035,8 @@ def test_estimate_gas(
         (MuirGlacierVM, 186120),
         (BerlinVM, 186120),
         (LondonVM, 186120),
+        (ArrowGlacierVM, 186120),
+        (MergeVM, 186120),
     )
 )
 def test_estimate_gas_on_full_block(

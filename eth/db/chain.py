@@ -269,7 +269,8 @@ class ChainDB(HeaderDB, ChainDatabaseAPI):
                 block.header.uncles_hash, uncles_hash)
         new_canonical_hashes = tuple(header.hash for header in new_canonical_headers)
         old_canonical_hashes = tuple(
-            header.hash for header in old_canonical_headers)
+            header.hash for header in old_canonical_headers
+        )
 
         cls._update_chain_gaps(db, block)
         return new_canonical_hashes, old_canonical_hashes

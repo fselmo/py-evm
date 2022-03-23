@@ -85,6 +85,10 @@ class BaseState(Configurable, StateAPI):
         return self.execution_context.difficulty
 
     @property
+    def mix_hash(self) -> bytes:
+        return self.execution_context.mix_hash
+
+    @property
     def gas_limit(self) -> int:
         return self.execution_context.gas_limit
 
