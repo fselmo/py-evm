@@ -34,3 +34,6 @@ from .london import (  # noqa: F401
 from .arrow_glacier import (  # noqa: F401
     ArrowGlacierVM,
 )
+from .the_merge import (  # noqa: F401
+    TheMergeVM,
+)

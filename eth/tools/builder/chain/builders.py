@@ -75,6 +75,7 @@ from eth.vm.forks import (
     BerlinVM,
     LondonVM,
     ArrowGlacierVM,
+    TheMergeVM,
 )
 
 
@@ -245,6 +246,7 @@ muir_glacier_at = fork_at(MuirGlacierVM)
 berlin_at = fork_at(BerlinVM)
 london_at = fork_at(LondonVM)
 arrow_glacier_at = fork_at(ArrowGlacierVM)
+the_merge_at = fork_at(TheMergeVM)
 
 latest_mainnet_at = arrow_glacier_at
 

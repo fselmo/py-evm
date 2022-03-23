@@ -11,14 +11,14 @@ common: &common
         name: checkout fixtures submodule
         command: git submodule update --init --recursive
     - run:
-        name: merge pull request base
+        name: the_merge pull request base
         command: ./.circleci/merge_pr.sh
     - run:
-        name: merge pull request base (2nd try)
+        name: the_merge pull request base (2nd try)
         command: ./.circleci/merge_pr.sh
         when: on_fail
     - run:
-        name: merge pull request base (3nd try)
+        name: the_merge pull request base (3nd try)
         command: ./.circleci/merge_pr.sh
         when: on_fail
     - restore_cache:

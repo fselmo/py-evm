@@ -22,6 +22,7 @@ class Forks(enum.Enum):
     Berlin = 'Berlin'
     London = 'London'
     ArrowGlacier = 'ArrowGlacier'
+    TheMerge = 'TheMerge'
 
 
 class CustomFrontierVM(FrontierVM):
@@ -34,7 +35,7 @@ class CustomFrontierVM(FrontierVM):
         (
             (),
             {},
-            ((0, Forks.ArrowGlacier),),
+            ((0, Forks.TheMerge),),
         ),
         (
             ((0, 'tangerine-whistle'), (1, 'spurious-dragon')),
@@ -140,6 +141,7 @@ class CustomFrontierVM(FrontierVM):
                 (8, Forks.Berlin),
                 (9, Forks.London),
                 (10, Forks.ArrowGlacier),
+                (11, Forks.TheMerge),
             ),
         ),
     ),

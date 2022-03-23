@@ -184,7 +184,7 @@ class Journal(BaseDB):
                 self.record_changeset()
                 self.latest = changeset_data
             else:
-                # otherwise, merge in all the current data
+                # otherwise, the_merge in all the current data
                 self.latest = merge(
                     self.latest,
                     changeset_data,

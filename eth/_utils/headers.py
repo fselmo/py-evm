@@ -100,6 +100,10 @@ def fill_header_params_from_parent(
     return header_kwargs
 
 
+def extract_header_params(header: BlockHeaderAPI):
+    return header.__dict__.items()
+
+
 def compute_gas_limit_bounds(previous_limit: int) -> Tuple[int, int]:
     """
     Compute the boundaries for the block gas limit based on the parent block.

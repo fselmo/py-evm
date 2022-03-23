@@ -71,7 +71,7 @@ def reopen_gap(decanonicalized: BlockNumber, base_gaps: ChainGaps) -> ChainGaps:
     # join overlapping gaps
     joined_gaps = _join_overlapping_gaps(sorted(new_raw_gaps))
 
-    # is the last gap overlapping with the tip child? if so, merge it
+    # is the last gap overlapping with the tip child? if so, the_merge it
     if joined_gaps[-1][1] + 1 >= tip_child:
         return joined_gaps[:-1], joined_gaps[-1][0]
     else:
