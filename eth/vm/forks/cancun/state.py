@@ -1,9 +1,6 @@
 from typing import Type
 
-from eth.abc import (
-    TransactionExecutorAPI,
-    WithdrawalAPI,
-)
+from eth.abc import TransactionExecutorAPI
 from .computation import CancunComputation
 from ..shanghai import ShanghaiState
 from ..shanghai.state import ShanghaiTransactionExecutor
