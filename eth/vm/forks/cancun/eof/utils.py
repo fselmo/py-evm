@@ -43,9 +43,9 @@ def eof_obj_from_bytecode(
     tsi = 13 + 2 * num_code_sections_int
     body["types_section"] = [
         {
-            "inputs": bytecode[tsi + 4 * i : tsi + 4 * i + 1],
-            "outputs": bytecode[tsi + 4 * i + 1 : tsi + 4 * i + 2],
-            "max_stack_height": bytecode[tsi + 4 * i + 2 : tsi + 4 * i + 4],
+            "inputs": bytecode[tsi + 4 * i: tsi + 4 * i + 1],
+            "outputs": bytecode[tsi + 4 * i + 1: tsi + 4 * i + 2],
+            "max_stack_height": bytecode[tsi + 4 * i + 2: tsi + 4 * i + 4],
         }
         for i in range(num_code_sections_int)
     ]
