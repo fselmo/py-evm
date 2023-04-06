@@ -16,7 +16,7 @@ deps = {
         "pyethash>=0.1.27,<1.0.0",
         "rlp>=3,<4",
         "trie>=2.0.0,<3",
-        "pydantic>=1.10.4<2.0.0",
+        "pydantic>=2.0.0",
     ],
     # The eth-extra sections is for libraries that the evm does not
     # explicitly need to function and hence should not depend on.
