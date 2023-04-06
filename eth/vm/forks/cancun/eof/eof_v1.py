@@ -1,5 +1,6 @@
 from typing import (
     List,
+    Sequence,
     Union,
 )
 
@@ -16,19 +17,10 @@ from .main import (
     EOFTypesSection,
 )
 from .constants import (
-    MAGIC_EOF_PREFIX,
     EOF_VERSION_V1,
     KIND_TYPES_V1,
-    VALID_TYPES_SIZE,
     KIND_CODE_V1,
-    VALID_NUM_CODE_SECTIONS,
-    VALID_CODE_SIZE,
     KIND_DATA_V1,
-    VALID_DATA_SIZE,
-    TERMINATOR,
-    VALID_INPUTS,
-    VALID_OUTPUTS,
-    VALID_MAX_STACK_HEIGHT,
 )
 from .utils import eof_obj_from_bytecode
 
@@ -65,28 +57,28 @@ VALID_OPCODES.append(0xB1)  # RETF
 class EOFHeaderV1(EOFHeader):
 
     @field_validator("version")
-    def validate_version(cls, version):
+    def validate_version(cls, version: bytes) -> bytes:
         if version != EOF_VERSION_V1:
             raise ValueError("invalid version value")
         return version
 
+    @classmethod
     @field_validator("kind_types")
-    def validate_kind_types(cls, kind_types):
+    def validate_kind_types(cls, kind_types: bytes) -> bytes:
         if kind_types != KIND_TYPES_V1:
             raise ValueError("invalid kind_types value")
         return kind_types
 
+    @classmethod
     @field_validator("kind_code")
-    def validate_kind_code(cls, kind_code):
+    def validate_kind_code(cls, kind_code: bytes) -> bytes:
         if kind_code != KIND_CODE_V1:
             raise ValueError("invalid kind_code value")
         return kind_code
 
+    @classmethod
     @field_validator("kind_data")
-    def validate_kind_data(cls, kind_data):
-        assert (
-            len(kind_data) == 1
-        ), f"kind_data must be 1 byte in length, got {len(kind_data)}"
+    def validate_kind_data(cls, kind_data: bytes) -> bytes:
         if kind_data != KIND_DATA_V1:
             raise ValueError("invalid kind_data value")
         return kind_data
@@ -97,15 +89,16 @@ class EOFTypesSectionV1(EOFTypesSection):
 
 
 class EOFBodyV1(EOFBody):
-    types_section: List[EOFTypesSectionV1]
+    types_section: Sequence[EOFTypesSectionV1]
 
+    @classmethod
     @field_validator("code_section")
     def validate_code_section_items(cls, code_section: List[bytes]) -> List[bytes]:
         # TODO: use CANCUN_OPCODES once those are implemented
         for code in code_section:
             for opcode in code:
                 if opcode not in VALID_OPCODES:
-                    raise ValueError(f"invalid opcode")
+                    raise ValueError(f"invalid opcode {opcode}")
 
         return code_section
 
