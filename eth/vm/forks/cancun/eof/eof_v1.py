@@ -8,6 +8,7 @@ from pydantic import (
     field_validator,
 )
 
+from eth_utils import ValidationError
 from hexbytes import HexBytes
 
 from .main import (
@@ -54,8 +55,17 @@ VALID_OPCODES.append(0xB0)  # CALLF
 VALID_OPCODES.append(0xB1)  # RETF
 
 
-class EOFHeaderV1(EOFHeader):
+# STOP, RETURN, REVERT, INVALID, RETF
+terminating_opcodes = [0x00, 0xF3, 0xFD, 0xFE, 0xB1]
 
+immediate_sizes = 256 * [0]
+immediate_sizes[0x5C] = 2  # RJUMP
+immediate_sizes[0x5D] = 2  # RJUMPI
+for opcode in range(0x60, 0x7F + 1):  # PUSH1..PUSH32
+    immediate_sizes[opcode] = opcode - 0x60 + 1
+
+
+class EOFHeaderV1(EOFHeader):
     @field_validator("version")
     def validate_version(cls, version: bytes) -> bytes:
         if version != EOF_VERSION_V1:
@@ -91,14 +101,80 @@ class EOFTypesSectionV1(EOFTypesSection):
 class EOFBodyV1(EOFBody):
     types_section: Sequence[EOFTypesSectionV1]
 
-    @classmethod
     @field_validator("code_section")
     def validate_code_section_items(cls, code_section: List[bytes]) -> List[bytes]:
-        # TODO: use CANCUN_OPCODES once those are implemented
         for code in code_section:
-            for opcode in code:
+            # EIP-4200 reference implementation
+
+            opcode = 0
+            pos = 0
+            rjumpdests = set()
+            immediates = set()  # type: ignore
+
+            while pos < len(code):
+                opcode = code[pos]
+                pos += 1
+
+                # TODO: use CANCUN_OPCODES.keys() once those are implemented
                 if opcode not in VALID_OPCODES:
-                    raise ValueError(f"invalid opcode {opcode}")
+                    raise ValueError(f"undefined instruction: {opcode}")
+
+                pc_post_instruction = pos + immediate_sizes[opcode]
+
+                if opcode in [0x5C, 0x5D]:
+                    if pos + 2 > len(code):
+                        raise ValidationError("truncated relative jump offset")
+                    offset = int.from_bytes(
+                        code[pos: pos + 2], byteorder="big", signed=True
+                    )
+
+                    rjumpdest = pc_post_instruction + offset
+                    if rjumpdest < 0 or rjumpdest >= len(code):
+                        raise ValidationError("relative jump destination out of bounds")
+
+                    rjumpdests.add(rjumpdest)
+                elif opcode == 0x5E:
+                    if pos + 1 > len(code):
+                        raise ValidationError("truncated jump table")
+                    jump_table_size = code[pos]
+                    if jump_table_size == 0:
+                        raise ValidationError("empty jump table")
+
+                    pc_post_instruction = pos + 1 + 2 * jump_table_size
+                    if pc_post_instruction > len(code):
+                        raise ValidationError("truncated jump table")
+
+                    for offset_pos in range(pos + 1, pc_post_instruction, 2):
+                        offset = int.from_bytes(
+                            code[offset_pos: offset_pos + 2],
+                            byteorder="big",
+                            signed=True,
+                        )
+
+                        rjumpdest = pc_post_instruction + offset
+                        if rjumpdest < 0 or rjumpdest >= len(code):
+                            raise ValidationError(
+                                "relative jump destination out of bounds"
+                            )
+                        rjumpdests.add(rjumpdest)
+
+                # Save immediate value positions
+                immediates.update(range(pos, pc_post_instruction))
+
+                # Skip immediates
+                pos = pc_post_instruction
+
+            # Ensure last opcode's immediate doesn't go over code end
+            if pos != len(code):
+                raise ValidationError("truncated immediate")
+
+            # opcode is the *last opcode*
+            if opcode not in terminating_opcodes:
+                raise ValidationError("no terminating instruction")
+
+            # Ensure relative jump destinations don't target immediates
+            if not rjumpdests.isdisjoint(immediates):
+                raise ValidationError("relative jump destination targets immediate")
 
         return code_section
 
