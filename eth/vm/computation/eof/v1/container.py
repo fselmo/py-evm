@@ -11,7 +11,7 @@ from pydantic import (
 from eth_utils import ValidationError
 from hexbytes import HexBytes
 
-from .main import (
+from ..model import (
     EOFBody,
     EOFContainer,
     EOFHeader,
@@ -24,35 +24,14 @@ from .constants import (
     KIND_DATA_V1,
 )
 from .utils import eof_obj_from_bytecode
+from ..opcodes import CANCUN_OPCODES
 
 
-# EIP-3670: EOF - Code Validation
-VALID_OPCODES = [
-    *range(0x00, 0x0B + 1),
-    *range(0x10, 0x1D + 1),
-    0x20,
-    *range(0x30, 0x3F + 1),
-    *range(0x40, 0x48 + 1),
-    *range(0x50, 0x5E + 1),
-    *range(0x60, 0x6F + 1),
-    *range(0x70, 0x7F + 1),
-    *range(0x80, 0x8F + 1),
-    *range(0x90, 0x9F + 1),
-    *range(0xA0, 0xA4 + 1),
-    # Note: 0xfe is considered assigned.
-    *range(0xF0, 0xF5 + 1),
-    0xFA,
-    0xFD,
-    0xFE,
-    0xFF,
-]
-
+VALID_OPCODES = list(CANCUN_OPCODES.keys())
 
 # EIP-4750: EOF - Functions
 VALID_OPCODES.pop(VALID_OPCODES.index(0x56))  # POP
 VALID_OPCODES.pop(VALID_OPCODES.index(0x57))  # MLOAD
-VALID_OPCODES.append(0xB0)  # CALLF
-VALID_OPCODES.append(0xB1)  # RETF
 
 
 # STOP, RETURN, REVERT, INVALID, RETF
@@ -115,7 +94,6 @@ class EOFBodyV1(EOFBody):
                 opcode = code[pos]
                 pos += 1
 
-                # TODO: use CANCUN_OPCODES.keys() once those are implemented
                 if opcode not in VALID_OPCODES:
                     raise ValueError(f"undefined instruction: {opcode}")
 

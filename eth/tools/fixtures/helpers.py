@@ -11,6 +11,7 @@ from typing import (
     Type,
 )
 
+from eth.vm.forks.cancun import CancunVM
 from eth_utils.toolz import (
     assoc,
     first,
@@ -149,7 +150,7 @@ def chain_vm_configuration(fixture: Dict[str, Any]) -> Iterable[Tuple[int, Type[
         )
     elif network == "Shanghai":
         return (
-            (0, ShanghaiVM),
+            (0, CancunVM),
         )
     elif network == 'FrontierToHomesteadAt5':
         HomesteadVM = BaseHomesteadVM.configure(support_dao_fork=False)

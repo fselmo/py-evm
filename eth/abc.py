@@ -2270,6 +2270,23 @@ class ComputationAPI(
         ...
 
 
+class EOFComputationAPI(
+    ComputationAPI,
+    ContextManager["EOFComputationAPI"],
+):
+    """
+    The base abstract class for all execution *eof* computations.
+    """
+
+    @abstractmethod
+    def apply_computation(
+        self,
+        state: "StateAPI",
+        parent_message_computation: "MessageComputationAPI",
+    ) -> "EOFComputationAPI":
+        ...
+
+
 class AccountStorageDatabaseAPI(ABC):
     """
     Storage cache and write batch for a single account. Changes are not

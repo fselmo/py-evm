@@ -29,10 +29,10 @@ from .constants import (
 """
 Note: The methods for the base classes were implemented during EOF v1 with some
 assumptions about what may change across EOF versions. Fields such as `version`, and
-`kind_*` fields make sense to be validated in the version class and not the base class.
-If any later versions of EOF need to override the below methods, they may need to be
-re-defined across the respective version classes with the appropriate validation
-logic for each version.
+`kind_*` fields make sense to be validated in at the version implementation level and 
+not at the base class level. If any later versions of EOF need to override the below 
+methods, they may need to be re-defined across the respective version classes with the 
+appropriate validation logic for each version.
 """
 
 

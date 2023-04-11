@@ -1,4 +1,4 @@
-from .eof_v1 import (  # noqa: F401
+from .container import (  # noqa: F401
     EOFBodyV1,
     EOFContainerV1,
     EOFHeaderV1,

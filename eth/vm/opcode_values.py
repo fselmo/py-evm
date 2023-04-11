@@ -96,6 +96,20 @@ JUMPDEST = 0x5b
 
 
 #
+# EOF Operations
+#
+
+# EIP-4750: EOF functions
+CALLF = 0xb0
+RETF = 0xb1
+
+# EIP-6206: EOF JUMPF instruction
+RJUMP = 0x5c
+RJUMPI = 0x5d
+RJUMPV = 0x5e
+
+
+#
 # Push Operations
 #
 PUSH0 = 0x5f
@@ -196,4 +210,5 @@ DELEGATECALL = 0xf4
 CREATE2 = 0xf5
 STATICCALL = 0xfa
 REVERT = 0xfd
+EXPLICIT_INVALID = 0xfe
 SELFDESTRUCT = 0xff
