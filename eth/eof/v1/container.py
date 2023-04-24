@@ -11,7 +11,7 @@ from pydantic import (
 from eth_utils import ValidationError
 from hexbytes import HexBytes
 
-from ..model import (
+from ..container import (
     EOFBody,
     EOFContainer,
     EOFHeader,
@@ -23,25 +23,42 @@ from .constants import (
     KIND_CODE_V1,
     KIND_DATA_V1,
 )
-from .utils import eof_obj_from_bytecode
-from ..opcodes import CANCUN_OPCODES
+from .._utils import eof_obj_from_bytecode
 
 
-VALID_OPCODES = list(CANCUN_OPCODES.keys())
+# directly from EIP-4200 reference implementation
+VALID_OPCODES = [
+    *range(0x00, 0x0b + 1),
+    *range(0x10, 0x1d + 1),
+    0x20,
+    *range(0x30, 0x3f + 1),
+    *range(0x40, 0x48 + 1),
+    *range(0x50, 0x5e + 1),
+    *range(0x60, 0x6f + 1),
+    *range(0x70, 0x7f + 1),
+    *range(0x80, 0x8f + 1),
+    *range(0x90, 0x9f + 1),
+    *range(0xa0, 0xa4 + 1),
+    # Note: 0xfe is considered assigned.
+    *range(0xf0, 0xf5 + 1), 0xfa, 0xfd, 0xfe, 0xff
+]
+
+# revised after EIP-5450:
+# STOP, RETURN, REVERT, INVALID, RETF
+TERMINATING_OPCODES = [0x00, 0xf3, 0xfd, 0xfe, 0xb1]
+
+IMMEDIATE_SIZES = 256 * [0]
+IMMEDIATE_SIZES[0x5c] = 2  # RJUMP
+IMMEDIATE_SIZES[0x5d] = 2  # RJUMPI
+IMMEDIATE_SIZES[0xb0] = 2  # CALLF
+IMMEDIATE_SIZES[0xb2] = 2  # JUMPF
+for push_opcode in range(0x60, 0x7f + 1):  # PUSH1..PUSH32
+    IMMEDIATE_SIZES[push_opcode] = push_opcode - 0x60 + 1
 
 # EIP-4750: EOF - Functions
+VALID_OPCODES += [0xb0, 0xb1]
 VALID_OPCODES.pop(VALID_OPCODES.index(0x56))  # POP
 VALID_OPCODES.pop(VALID_OPCODES.index(0x57))  # MLOAD
-
-
-# STOP, RETURN, REVERT, INVALID, RETF
-terminating_opcodes = [0x00, 0xF3, 0xFD, 0xFE, 0xB1]
-
-immediate_sizes = 256 * [0]
-immediate_sizes[0x5C] = 2  # RJUMP
-immediate_sizes[0x5D] = 2  # RJUMPI
-for opcode in range(0x60, 0x7F + 1):  # PUSH1..PUSH32
-    immediate_sizes[opcode] = opcode - 0x60 + 1
 
 
 class EOFHeaderV1(EOFHeader):
@@ -85,8 +102,7 @@ class EOFBodyV1(EOFBody):
         for code in code_section:
             # EIP-4200 reference implementation
 
-            opcode = 0
-            pos = 0
+            pos: int = 0
             rjumpdests = set()
             immediates = set()  # type: ignore
 
@@ -97,7 +113,7 @@ class EOFBodyV1(EOFBody):
                 if opcode not in VALID_OPCODES:
                     raise ValueError(f"undefined instruction: {opcode}")
 
-                pc_post_instruction = pos + immediate_sizes[opcode]
+                pc_post_instruction = pos + IMMEDIATE_SIZES[opcode]
 
                 if opcode in [0x5C, 0x5D]:
                     if pos + 2 > len(code):
@@ -146,9 +162,11 @@ class EOFBodyV1(EOFBody):
             if pos != len(code):
                 raise ValidationError("truncated immediate")
 
-            # opcode is the *last opcode*
-            if opcode not in terminating_opcodes:
-                raise ValidationError("no terminating instruction")
+            # NOTE: Terminating Opcode is not a requirement but is still in EIP-4200
+            # as of the time of this writing. It is commented out here so as not to
+            # confuse the reader if using the EIP as a reference.
+            # if opcode not in TERMINATING_OPCODES:
+            #     raise ValidationError("no terminating instruction")
 
             # Ensure relative jump destinations don't target immediates
             if not rjumpdests.isdisjoint(immediates):
@@ -160,6 +178,10 @@ class EOFBodyV1(EOFBody):
 class EOFContainerV1(EOFContainer):
     header: EOFHeaderV1
     body: EOFBodyV1
+
+    valid_opcodes: List[int] = VALID_OPCODES
+    terminating_opcodes: List[int] = TERMINATING_OPCODES
+    immediate_sizes: List[int] = IMMEDIATE_SIZES
 
     @staticmethod
     def from_bytecode(bytecode: Union[bytes, HexBytes]) -> "EOFContainerV1":

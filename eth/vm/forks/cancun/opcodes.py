@@ -16,31 +16,31 @@ NEW_OPCODES: Dict[int, OpcodeAPI] = {
         logic_fn=lambda _: _,
         mnemonic=mnemonics.CALLF,
         gas_cost=0,
-        is_eof_opcode=True,
+        is_eof_specific=True,
     ),
     opcode_values.RETF: as_opcode(
         logic_fn=lambda _: _,
         mnemonic=mnemonics.RETF,
         gas_cost=0,
-        is_eof_opcode=True,
+        is_eof_specific=True,
     ),
     opcode_values.RJUMP: as_opcode(
         logic_fn=lambda _: _,
         mnemonic=mnemonics.RJUMP,
         gas_cost=0,
-        is_eof_opcode=True,
+        is_eof_specific=True,
     ),
     opcode_values.RJUMPI: as_opcode(
         logic_fn=lambda _: _,
         mnemonic=mnemonics.RJUMPI,
         gas_cost=0,
-        is_eof_opcode=True,
+        is_eof_specific=True,
     ),
     opcode_values.RJUMPV: as_opcode(
         logic_fn=lambda _: _,
         mnemonic=mnemonics.RJUMPV,
         gas_cost=0,
-        is_eof_opcode=True,
+        is_eof_specific=True,
     ),
 
     # TODO: If this is even necessary, add this OPCODE to the earliest fork that

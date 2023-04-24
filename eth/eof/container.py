@@ -14,7 +14,7 @@ from pydantic import (
 )
 
 from hexbytes import HexBytes
-from .constants import (
+from .v1.constants import (
     MAGIC_EOF_PREFIX,
     TERMINATOR,
     VALID_CODE_SIZE,

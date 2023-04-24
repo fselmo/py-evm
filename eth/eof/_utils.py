@@ -69,7 +69,7 @@ def eof_obj_from_bytecode(
     # check but this is a nice sanity check
     if len(data_section) != int.from_bytes(header["data_size"], "big"):
         raise ValueError(
-            "`len(body.data_section)` does not match `header.data_size` field"
+            "`body.data_section` length does not match `header.data_size` field"
         )
 
     body["data_section"] = data_section  # type: ignore

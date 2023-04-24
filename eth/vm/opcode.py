@@ -25,7 +25,7 @@ T = TypeVar('T')
 class Opcode(Configurable, OpcodeAPI):
     mnemonic: str = None
     gas_cost: int = None
-    is_eof_opcode: bool = False
+    is_eof_specific: bool = False
 
     def __init__(self) -> None:
         if self.mnemonic is None:
@@ -43,7 +43,7 @@ class Opcode(Configurable, OpcodeAPI):
         logic_fn: Callable[..., Any],
         mnemonic: str,
         gas_cost: int,
-        is_eof_opcode: bool = False,
+        is_eof_specific: bool = False,
     ) -> T:
         if gas_cost:
             @functools.wraps(logic_fn)
@@ -64,7 +64,7 @@ class Opcode(Configurable, OpcodeAPI):
             '__call__': staticmethod(wrapped_logic_fn),
             'mnemonic': mnemonic,
             'gas_cost': gas_cost,
-            'is_eof_opcode': is_eof_opcode,
+            'is_eof_specific': is_eof_specific,
         }
         opcode_cls = type(f"opcode:{mnemonic}", (cls,), props)
         return opcode_cls()

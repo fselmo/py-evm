@@ -347,7 +347,7 @@ class BaseTransactionAPI(ABC):
         ...
 
     @abstractmethod
-    def gas_used_by(self, computation: 'ComputationAPI') -> int:
+    def gas_used_by(self, computation: "ComputationAPI") -> int:
         """
         Return the gas used by the given computation. In Frontier,
         for example, this is sum of the intrinsic cost and the gas used
@@ -1440,7 +1440,7 @@ class OpcodeAPI(ABC):
     mnemonic: str
 
     @abstractmethod
-    def __call__(self, computation: 'ComputationAPI') -> None:
+    def __call__(self, computation: "ComputationAPI") -> None:
         """
         Execute the logic of the opcode.
         """
@@ -1449,7 +1449,7 @@ class OpcodeAPI(ABC):
     @classmethod
     @abstractmethod
     def as_opcode(cls: Type[T],
-                  logic_fn: Callable[['ComputationAPI'], None],
+                  logic_fn: Callable[["ComputationAPI"], None],
                   mnemonic: str,
                   gas_cost: int) -> T:
         """
@@ -2267,23 +2267,6 @@ class ComputationAPI(
 
         Instead, prefer :meth:`~apply_message` or :meth:`~apply_create_message`.
         """
-        ...
-
-
-class EOFComputationAPI(
-    ComputationAPI,
-    ContextManager["EOFComputationAPI"],
-):
-    """
-    The base abstract class for all execution *eof* computations.
-    """
-
-    @abstractmethod
-    def apply_computation(
-        self,
-        state: "StateAPI",
-        parent_message_computation: "MessageComputationAPI",
-    ) -> "EOFComputationAPI":
         ...
 
 

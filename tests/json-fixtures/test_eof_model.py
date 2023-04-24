@@ -2,14 +2,28 @@
 #  debugging the EOF model validation while development is in progress.
 
 import os
-
 import pytest
 
-from eth.tools.fixtures import filter_fixtures, generate_fixture_tests, load_fixture
-from eth.vm.forks.cancun.eof import EOFContainerV1
-from eth_typing import ForkName
-from eth_utils import ValidationError
-from hexbytes import HexBytes
+from hexbytes import (
+    HexBytes,
+)
+
+from eth.tools.fixtures import (
+    filter_fixtures,
+    generate_fixture_tests,
+    load_fixture,
+)
+from eth.eof import (
+    EOFContainerV1,
+)
+
+from eth_utils import (
+    ValidationError, to_tuple,
+)
+
+from eth_typing import (
+    ForkName,
+)
 
 
 ROOT_PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
@@ -19,37 +33,53 @@ BASE_FIXTURE_PATH = os.path.join(
     ROOT_PROJECT_DIR,
     "fixtures",
     "EOFTests",
-    "efExample",
 )
+
+# Fixtures have an `_info` key at their root which we need to skip over.
+FIXTURE_FORK_SKIPS = {'_info'}
+
+
+@to_tuple
+def expand_fixtures_forks(all_fixtures):
+    """
+    The transaction fixtures have different definitions for each fork and must be
+    expanded one step further to have one fixture for each defined fork within
+    the fixture.
+    """
+    for fixture_path, fixture_key in all_fixtures:
+        if not fixture_key.startswith("ymlExample"):
+            fixture = load_fixture(fixture_path, fixture_key)
+            results = [
+                vector_dict["results"] for vector_dict in list(fixture["vectors"].values())
+            ]
+            forks = [list(result.keys()) for result in results][0]
+            for fixture_fork in forks:
+                if fixture_fork not in FIXTURE_FORK_SKIPS:
+                    yield fixture_path, fixture_key, fixture_fork
 
 
 def pytest_generate_tests(metafunc):
     generate_fixture_tests(
         metafunc=metafunc,
         base_fixture_path=BASE_FIXTURE_PATH,
-        filter_fn=filter_fixtures(
-            fixtures_base_dir=BASE_FIXTURE_PATH,
-        ),
+        preprocess_fn=expand_fixtures_forks,
     )
 
 
 @pytest.fixture
 def fixture(fixture_data):
-    fixture_path, fixture_key = fixture_data
+    fixture_path, fixture_key, fixture_fork = fixture_data
     fixture = load_fixture(
         fixture_path,
         fixture_key,
     )
+
     return fixture
 
 
 EOF_FORMAT_FORK_MAP = {
-    ForkName.Shanghai: EOFContainerV1,
+    "Cancun": EOFContainerV1,
 }
-
-
-class TestShouldHaveFailed(Exception):
-    pass
 
 
 def test_eof_model(fixture):
@@ -58,24 +88,21 @@ def test_eof_model(fixture):
     likely_execution_fails = []
 
     for test_name in vectors:
-        # TODO: test "validInvalid_32" has mismatched `header.data_size` and
-        #  `len(body.data_section)`. Confirming if this is a bug in the test.
-        if test_name.startswith("validInvalid") and not test_name.endswith("_32"):
+        if not test_name.startswith("ymlExample"):
             vector = vectors[test_name]
 
-            full_bytecode = vector["code"]
-            eof_bytecode = HexBytes(full_bytecode[full_bytecode.find("ef"):])
+            bytecode = HexBytes(vector["code"])
 
             for fork_name in vector["results"]:
                 container_should_be_valid = vector["results"][fork_name]["result"]
 
-                eof_container_class = EOF_FORMAT_FORK_MAP[fork_name]
-
                 if container_should_be_valid:
-                    eof = eof_container_class.from_bytecode(eof_bytecode)
+                    eof_container_class = EOF_FORMAT_FORK_MAP[fork_name]
+
+                    eof = eof_container_class.from_bytecode(bytecode)
 
                     eof_as_bytecode = eof.as_bytecode()
-                    assert eof_as_bytecode == eof_bytecode
+                    assert eof_as_bytecode == bytecode
 
                     reconstructed_eof = eof_container_class.from_bytecode(
                         eof_as_bytecode
@@ -83,12 +110,15 @@ def test_eof_model(fixture):
                     assert reconstructed_eof == eof
 
                 else:
+                    if fork_name not in EOF_FORMAT_FORK_MAP.keys():
+                        # For pre-EOF forks, there is no EOF model to validate and those
+                        #  tests are expected to fail every time.
+                        continue
+
                     try:
-                        eof_container_class.from_bytecode(eof_bytecode)
-                        likely_execution_fails.append(eof_bytecode)
-                        # raise TestShouldHaveFailed(
-                        #     "EOFContainer.from_bytecode() should have failed here."
-                        # )
+                        eof_container_class = EOF_FORMAT_FORK_MAP[fork_name]
+                        eof_container_class.from_bytecode(bytecode)
+                        likely_execution_fails.append(bytecode)
                     except (ValueError, ValidationError, AssertionError):
                         # exception is expected
                         pass

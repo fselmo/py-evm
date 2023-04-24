@@ -11,7 +11,6 @@ from typing import (
     Type,
 )
 
-from eth.vm.forks.cancun import CancunVM
 from eth_utils.toolz import (
     assoc,
     first,
@@ -56,6 +55,7 @@ from eth.vm.forks import (
     GrayGlacierVM,
     ParisVM,
     ShanghaiVM,
+    CancunVM,
 )
 
 
@@ -149,6 +149,10 @@ def chain_vm_configuration(fixture: Dict[str, Any]) -> Iterable[Tuple[int, Type[
             (0, ParisVM),
         )
     elif network == "Shanghai":
+        return (
+            (0, ShanghaiVM),
+        )
+    elif network == "Cancun":
         return (
             (0, CancunVM),
         )
