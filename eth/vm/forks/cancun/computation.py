@@ -9,7 +9,7 @@ from eth.abc import (
 from eth.exceptions import Halt
 
 from .opcodes import (
-    CANCUN_OPCODES,
+    CANCUN_LEGACY_OPCODES,
 )
 from eth.eof.v1.constants import (
     MAGIC_EOF_PREFIX,
@@ -22,13 +22,18 @@ from eth.vm.forks.shanghai.computation import (
     ShanghaiComputation,
 )
 from ...logic.invalid import InvalidOpcode
+from ...stack import Stack
 
 
 class CancunComputation(ShanghaiComputation):
     """
     A class for all execution computations in the ``Cancun`` hard fork
     """
-    opcodes = CANCUN_OPCODES
+
+    # A return stack is introduced for EOF computations in EIP-4750
+    _return_stack = Stack()
+
+    opcodes = CANCUN_LEGACY_OPCODES
 
     @staticmethod
     def _execute_legacy_bytecode(computation: ComputationAPI):

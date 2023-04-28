@@ -92,7 +92,9 @@ JUMPI = 0x57
 PC = 0x58
 MSIZE = 0x59
 GAS = 0x5a
+
 JUMPDEST = 0x5b
+NOP = 0x5b  # EIP-4750: JUMPDEST instruction renamed to NOP ("no operation")
 
 
 #
@@ -210,5 +212,5 @@ DELEGATECALL = 0xf4
 CREATE2 = 0xf5
 STATICCALL = 0xfa
 REVERT = 0xfd
-EXPLICIT_INVALID = 0xfe
+INVALID = 0xfe
 SELFDESTRUCT = 0xff
