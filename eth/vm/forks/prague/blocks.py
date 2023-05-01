@@ -16,7 +16,7 @@ from rlp.sedes import (
 )
 
 from .transactions import (
-    CancunTransactionBuilder,
+    PragueTransactionBuilder,
 )
 from ..shanghai.blocks import (
     ShanghaiBackwardsHeader,
@@ -31,15 +31,15 @@ class ParisMiningHeader(ShanghaiMiningHeader, ABC):
     pass
 
 
-class CancunBlockHeader(ShanghaiBlockHeader, ABC):
+class PragueBlockHeader(ShanghaiBlockHeader, ABC):
     def __str__(self) -> str:
-        return f'<CancunBlockHeader #{self.block_number} {encode_hex(self.hash)[2:10]}>'
+        return f'<PragueBlockHeader #{self.block_number} {encode_hex(self.hash)[2:10]}>'
 
 
-class CancunBlock(ShanghaiBlock):
-    transaction_builder: Type[TransactionBuilderAPI] = CancunTransactionBuilder
+class PragueBlock(ShanghaiBlock):
+    transaction_builder: Type[TransactionBuilderAPI] = PragueTransactionBuilder
     fields = [
-        ('header', CancunBlockHeader),
+        ('header', PragueBlockHeader),
         ('transactions', CountableList(transaction_builder)),
         ('uncles', CountableList(ShanghaiBackwardsHeader, max_length=0)),
         ('withdrawals', CountableList(Withdrawal)),

@@ -12,18 +12,18 @@ from eth.vm.forks.shanghai.transactions import (
 )
 
 
-class CancunLegacyTransaction(ShanghaiLegacyTransaction, ABC):
+class PragueLegacyTransaction(ShanghaiLegacyTransaction, ABC):
     pass
 
 
-class CancunUnsignedLegacyTransaction(ShanghaiUnsignedLegacyTransaction):
+class PragueUnsignedLegacyTransaction(ShanghaiUnsignedLegacyTransaction):
     def as_signed_transaction(
         self,
         private_key: PrivateKey,
         chain_id: int = None
-    ) -> CancunLegacyTransaction:
+    ) -> PragueLegacyTransaction:
         v, r, s = create_transaction_signature(self, private_key, chain_id=chain_id)
-        return CancunLegacyTransaction(
+        return PragueLegacyTransaction(
             nonce=self.nonce,
             gas_price=self.gas_price,
             gas=self.gas,
@@ -36,6 +36,6 @@ class CancunUnsignedLegacyTransaction(ShanghaiUnsignedLegacyTransaction):
         )
 
 
-class CancunTransactionBuilder(ShanghaiTransactionBuilder):
-    legacy_signed = CancunLegacyTransaction
-    legacy_unsigned = CancunUnsignedLegacyTransaction
+class PragueTransactionBuilder(ShanghaiTransactionBuilder):
+    legacy_signed = PragueLegacyTransaction
+    legacy_unsigned = PragueUnsignedLegacyTransaction

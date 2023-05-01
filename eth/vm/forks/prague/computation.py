@@ -25,9 +25,9 @@ from ...logic.invalid import InvalidOpcode
 from ...stack import Stack
 
 
-class CancunComputation(ShanghaiComputation):
+class PragueComputation(ShanghaiComputation):
     """
-    A class for all execution computations in the ``Cancun`` hard fork
+    A class for all execution computations in the ``Prague`` hard fork
     """
 
     # A return stack is introduced for EOF computations in EIP-4750
@@ -65,7 +65,7 @@ class CancunComputation(ShanghaiComputation):
                 break
 
     @staticmethod
-    def _execute_eof_bytecode(computation: ComputationAPI):
+    def _validate_and_execute_eof_bytecode(computation: ComputationAPI):
         computation.logger.debug2("-- EOF bytecode execution rules --")
         # import pdb; pdb.set_trace()
 
@@ -93,7 +93,7 @@ class CancunComputation(ShanghaiComputation):
             return computation
 
         if computation.code[0:2] == MAGIC_EOF_PREFIX:
-            cls._execute_eof_bytecode(computation)
+            cls._validate_and_execute_eof_bytecode(computation)
         else:
             cls._execute_legacy_bytecode(computation)
 

@@ -9,11 +9,11 @@ from eth.vm.forks.shanghai.headers import (
 from eth.vm.forks.byzantium.headers import (
     configure_header,
 )
-from .blocks import CancunBlockHeader
+from .blocks import PragueBlockHeader
 
 
 @curry
-def create_cancun_header_from_parent(
+def create_prague_header_from_parent(
     parent_header: Optional[BlockHeaderAPI],
     **header_params: Any,
 ) -> BlockHeaderAPI:
@@ -23,9 +23,9 @@ def create_cancun_header_from_parent(
     )
 
     # extract params validated up to shanghai (previous VM)
-    # and plug into a `CancunBlockHeader` class
+    # and plug into a `PragueBlockHeader` class
     all_fields = shanghai_validated_header.as_dict()
-    return CancunBlockHeader(**all_fields)
+    return PragueBlockHeader(**all_fields)
 
 
-configure_cancun_header = configure_header()
+configure_prague_header = configure_header()

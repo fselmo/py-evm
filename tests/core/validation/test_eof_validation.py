@@ -1,6 +1,6 @@
 import pytest
 
-from eth.vm.forks.cancun.eof import EOFContainerV1
+from eth.vm.forks.prague.eof import EOFContainerV1
 from hexbytes import HexBytes
 
 

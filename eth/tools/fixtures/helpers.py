@@ -55,7 +55,7 @@ from eth.vm.forks import (
     GrayGlacierVM,
     ParisVM,
     ShanghaiVM,
-    CancunVM,
+    PragueVM,
 )
 
 
@@ -152,9 +152,9 @@ def chain_vm_configuration(fixture: Dict[str, Any]) -> Iterable[Tuple[int, Type[
         return (
             (0, ShanghaiVM),
         )
-    elif network == "Cancun":
+    elif network == "Prague":
         return (
-            (0, CancunVM),
+            (0, PragueVM),
         )
     elif network == 'FrontierToHomesteadAt5':
         HomesteadVM = BaseHomesteadVM.configure(support_dao_fork=False)
