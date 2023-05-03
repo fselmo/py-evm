@@ -10,7 +10,7 @@ from eth.vm.forks.shanghai.opcodes import SHANGHAI_OPCODES
 
 # -- legacy opcodes -- #
 
-CANCUN_LEGACY_OPCODES: Dict[int, OpcodeAPI] = merge(
+PRAGUE_LEGACY_OPCODES: Dict[int, OpcodeAPI] = merge(
     copy.deepcopy(SHANGHAI_OPCODES),
 )
 
@@ -20,7 +20,7 @@ NEW_EOF_OPCODES: Dict[int, OpcodeAPI] = {
     opcode_values.CALLF: as_opcode(
         logic_fn=lambda _: _,
         mnemonic=mnemonics.CALLF,
-        gas_cost=0,
+        gas_cost=5,
     ),
     opcode_values.RETF: as_opcode(
         logic_fn=lambda _: _,
@@ -45,7 +45,7 @@ NEW_EOF_OPCODES: Dict[int, OpcodeAPI] = {
 }
 
 MODIFIED_LEGACY_OPCODES: Dict[int, OpcodeAPI] = merge(
-    copy.deepcopy(CANCUN_LEGACY_OPCODES),
+    copy.deepcopy(PRAGUE_LEGACY_OPCODES),
     {
         # EIP-4750: JUMPDEST instruction renamed to NOP ("no operation")
         opcode_values.NOP: as_opcode(
@@ -71,7 +71,7 @@ MODIFIED_LEGACY_OPCODES.pop(opcode_values.JUMPI)
 MODIFIED_LEGACY_OPCODES.pop(opcode_values.PC)
 
 
-CANCUN_EOF_OPCODES: Dict[int, OpcodeAPI] = merge(
+PRAGUE_EOF_OPCODES: Dict[int, OpcodeAPI] = merge(
     MODIFIED_LEGACY_OPCODES,
     NEW_EOF_OPCODES,
 )

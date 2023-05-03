@@ -25,6 +25,8 @@ from .v1.constants import (
     VALID_OUTPUTS,
     VALID_TYPES_SIZE,
 )
+from ..abc import EOFBodyAPI, EOFContainerAPI, EOFHeaderAPI, EOFTypesSectionAPI
+
 
 """
 Note: The methods for the base classes were implemented during EOF v1 with some
@@ -36,7 +38,7 @@ appropriate validation logic for each version.
 """
 
 
-class EOFHeader(BaseModel):
+class EOFHeader(BaseModel, EOFHeaderAPI):
     """
     Base class for an EOF container `header`.
     """
@@ -125,7 +127,7 @@ class EOFHeader(BaseModel):
         )
 
 
-class EOFTypesSection(BaseModel):
+class EOFTypesSection(BaseModel, EOFTypesSectionAPI):
     """
     Base class for an EOF container body's `types` section.
     """
@@ -169,7 +171,7 @@ class EOFTypesSection(BaseModel):
         return len(self.inputs) + len(self.outputs) + len(self.max_stack_height)
 
 
-class EOFBody(BaseModel):
+class EOFBody(BaseModel, EOFBodyAPI):
     """
     Base class for an EOF container `body`.
     """
@@ -192,7 +194,7 @@ class EOFBody(BaseModel):
         )
 
 
-class EOFContainer(BaseModel):
+class EOFContainer(BaseModel, EOFContainerAPI):
     """
     Base class for an EOF `container`.
     """

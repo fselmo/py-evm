@@ -1861,6 +1861,61 @@ class ExecutionContextAPI(ABC):
         ...
 
 
+class EOFHeaderAPI(ABC):
+    magic: bytes
+    version: bytes
+    kind_types: bytes
+    types_size: bytes
+    kind_code: bytes
+    num_code_sections: bytes
+    code_size: List[bytes]
+    kind_data: bytes
+    data_size: bytes
+    terminator: bytes
+
+
+class EOFTypesSectionAPI(ABC):
+    inputs: bytes
+    outputs: bytes
+    max_stack_height: bytes
+
+    size: int
+
+
+class EOFBodyAPI(ABC):
+    types_section: Sequence[EOFTypesSectionAPI]
+    code_section: List[bytes]
+    data_section: bytes
+
+    size: int
+
+
+class EOFContainerAPI(ABC):
+    _version: int
+    _terminating_opcodes: Tuple[int, ...]  # TODO: add this as a property on Opcode
+
+    header: EOFHeaderAPI
+    body: EOFBodyAPI
+    size: int
+
+    @abstractmethod
+    def as_bytecode(self) -> bytes:
+        ...
+
+
+class BytecodeExecutionContextAPI(ABC):
+    _opcodes: Dict[int, OpcodeAPI]
+    _code: CodeStreamAPI
+    _memory: MemoryAPI
+    _stack: StackAPI
+    _gas_meter: GasMeterAPI
+
+
+class EOFBytecodeExecutionContextAPI(BytecodeExecutionContextAPI):
+    _eof_container: EOFContainerAPI
+    _return_stack: StackAPI
+
+
 class ComputationAPI(
     ContextManager["ComputationAPI"],
     StackManipulationAPI,
@@ -1874,21 +1929,28 @@ class ComputationAPI(
     state: "StateAPI"
     msg: MessageAPI
     transaction_context: TransactionContextAPI
-    code: CodeStreamAPI
     children: List["ComputationAPI"]
     return_data: bytes = b''
     accounts_to_delete: Dict[Address, Address]
 
-    _memory: MemoryAPI
-    _stack: StackAPI
-    _gas_meter: GasMeterAPI
     _error: VMError
     _output: bytes = b''
     _log_entries: List[Tuple[int, Address, Tuple[int, ...], bytes]]
 
     # VM configuration
+
+    # retrieved from the _context internally and exposed via these public properties
+    code: CodeStreamAPI
+    memory: MemoryAPI
+    stack: StackAPI
+    gas_meter: GasMeterAPI
     opcodes: Dict[int, OpcodeAPI]
+
     _precompiles: Dict[Address, Callable[["ComputationAPI"], "ComputationAPI"]]
+
+    # EOF configuration
+    is_eof_computation: bool
+    return_stack: StackAPI
 
     @abstractmethod
     def __init__(
