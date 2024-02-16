@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 from setuptools import (
     Extension,
     find_packages,
@@ -9,14 +10,17 @@ from setuptools import (
 ckzg_dir = "c-kzg-4844"
 ckzg = Extension(
     "ckzg",
-    sources=[f"{ckzg_dir}/bindings/python/ckzg.c", f"{ckzg_dir}/src/c_kzg_4844.c"],
-    include_dirs=[
-        f"{ckzg_dir}/inc",
-        f"{ckzg_dir}/src",
-        f"{ckzg_dir}/blst/src",
-        f"{ckzg_dir}/blst/bindings",
+    sources=[
+        os.path.join(ckzg_dir, "bindings", "python", "ckzg.c"),
+        os.path.join(ckzg_dir, "src", "c_kzg_4844.c"),
     ],
-    library_dirs=[f"{ckzg_dir}/lib"],
+    include_dirs=[
+        os.path.join(ckzg_dir, "inc"),
+        os.path.join(ckzg_dir, "src"),
+        os.path.join(ckzg_dir, "blst", "src"),
+        os.path.join(ckzg_dir, "blst", "bindings"),
+    ],
+    library_dirs=[os.path.join(ckzg_dir, "lib")],
     libraries=["blst"],
 )
 
