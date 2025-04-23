@@ -4,27 +4,31 @@ from typing import (
     Union,
 )
 
+from eth_utils import (
+    ValidationError,
+)
+from hexbytes import (
+    HexBytes,
+)
 from pydantic import (
     field_validator,
 )
 
-from eth_utils import ValidationError
-from hexbytes import HexBytes
-
+from .constants import (
+    EOF_VERSION_V1,
+    KIND_CODE_V1,
+    KIND_DATA_V1,
+    KIND_TYPES_V1,
+)
 from .main import (
     EOFBody,
     EOFContainer,
     EOFHeader,
     EOFTypesSection,
 )
-from .constants import (
-    EOF_VERSION_V1,
-    KIND_TYPES_V1,
-    KIND_CODE_V1,
-    KIND_DATA_V1,
+from .utils import (
+    eof_obj_from_bytecode,
 )
-from .utils import eof_obj_from_bytecode
-
 
 # EIP-3670: EOF - Code Validation
 VALID_OPCODES = [
@@ -67,27 +71,28 @@ for opcode in range(0x60, 0x7F + 1):  # PUSH1..PUSH32
 
 class EOFHeaderV1(EOFHeader):
     @field_validator("version")
+    @classmethod
     def validate_version(cls, version: bytes) -> bytes:
         if version != EOF_VERSION_V1:
             raise ValueError("invalid version value")
         return version
 
-    @classmethod
     @field_validator("kind_types")
+    @classmethod
     def validate_kind_types(cls, kind_types: bytes) -> bytes:
         if kind_types != KIND_TYPES_V1:
             raise ValueError("invalid kind_types value")
         return kind_types
 
-    @classmethod
     @field_validator("kind_code")
+    @classmethod
     def validate_kind_code(cls, kind_code: bytes) -> bytes:
         if kind_code != KIND_CODE_V1:
             raise ValueError("invalid kind_code value")
         return kind_code
 
-    @classmethod
     @field_validator("kind_data")
+    @classmethod
     def validate_kind_data(cls, kind_data: bytes) -> bytes:
         if kind_data != KIND_DATA_V1:
             raise ValueError("invalid kind_data value")
@@ -102,6 +107,7 @@ class EOFBodyV1(EOFBody):
     types_section: Sequence[EOFTypesSectionV1]
 
     @field_validator("code_section")
+    @classmethod
     def validate_code_section_items(cls, code_section: List[bytes]) -> List[bytes]:
         for code in code_section:
             opcode = 0
@@ -113,7 +119,7 @@ class EOFBodyV1(EOFBody):
                 opcode = code[pos]
                 pos += 1
 
-                # TODO: use CANCUN_OPCODES.keys() once those are implemented
+                # TODO: use OSAKA_OPCODES.keys() once those are implemented
                 if opcode not in VALID_OPCODES:
                     raise ValueError(f"undefined instruction: {opcode}")
 
@@ -123,7 +129,7 @@ class EOFBodyV1(EOFBody):
                     if pos + 2 > len(code):
                         raise ValidationError("truncated relative jump offset")
                     offset = int.from_bytes(
-                        code[pos: pos + 2], byteorder="big", signed=True
+                        code[pos : pos + 2], byteorder="big", signed=True
                     )
 
                     rjumpdest = pc_post_instruction + offset
@@ -144,7 +150,7 @@ class EOFBodyV1(EOFBody):
 
                     for offset_pos in range(pos + 1, pc_post_instruction, 2):
                         offset = int.from_bytes(
-                            code[offset_pos: offset_pos + 2],
+                            code[offset_pos : offset_pos + 2],
                             byteorder="big",
                             signed=True,
                         )

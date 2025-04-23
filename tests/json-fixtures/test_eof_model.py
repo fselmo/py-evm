@@ -1,16 +1,27 @@
 # TODO: This test will likely not exist as it currently is. This is useful for
 #  debugging the EOF model validation while development is in progress.
 
+import pytest
 import os
 
-import pytest
+from eth_typing import (
+    ForkName,
+)
+from eth_utils import (
+    ValidationError,
+)
+from hexbytes import (
+    HexBytes,
+)
 
-from eth.tools.fixtures import filter_fixtures, generate_fixture_tests, load_fixture
-from eth.vm.forks.cancun.eof import EOFContainerV1
-from eth_typing import ForkName
-from eth_utils import ValidationError
-from hexbytes import HexBytes
-
+from eth.tools.fixtures import (
+    filter_fixtures,
+    generate_fixture_tests,
+    load_fixture,
+)
+from eth.vm.forks.cancun.eof import (
+    EOFContainerV1,
+)
 
 ROOT_PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
@@ -64,7 +75,7 @@ def test_eof_model(fixture):
             vector = vectors[test_name]
 
             full_bytecode = vector["code"]
-            eof_bytecode = HexBytes(full_bytecode[full_bytecode.find("ef"):])
+            eof_bytecode = HexBytes(full_bytecode[full_bytecode.find("ef") :])
 
             for fork_name in vector["results"]:
                 container_should_be_valid = vector["results"][fork_name]["result"]

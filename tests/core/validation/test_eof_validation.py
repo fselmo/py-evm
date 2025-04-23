@@ -1,7 +1,13 @@
 import pytest
 
-from eth.vm.forks.cancun.eof import EOFContainerV1
-from hexbytes import HexBytes
+from eth_utils import ValidationError
+from hexbytes import (
+    HexBytes,
+)
+
+from eth.vm.forks.osaka.eof import (
+    EOFContainerV1,
+)
 
 
 @pytest.mark.parametrize(
@@ -119,5 +125,12 @@ def test_eof_model(eof_bytecode):
     ],
 )
 def test_invalid_eof_model(invalid_eof_bytecode):
-    with pytest.raises(Exception):
+    try:
         EOFContainerV1.from_bytecode(invalid_eof_bytecode)
+    except (ValidationError, ValueError):
+        pass
+    else:
+        pytest.fail(
+            f"EOFContainerV1.from_bytecode should have raised an exception for {invalid_eof_bytecode}"
+        )
+

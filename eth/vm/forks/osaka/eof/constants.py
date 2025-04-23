@@ -1,4 +1,6 @@
-from hexbytes import HexBytes
+from hexbytes import (
+    HexBytes,
+)
 
 # header
 MAGIC_EOF_PREFIX = HexBytes("0xEF00")

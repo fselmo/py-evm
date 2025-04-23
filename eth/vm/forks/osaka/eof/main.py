@@ -1,19 +1,21 @@
-from abc import abstractmethod
+from abc import (
+    abstractmethod,
+)
 from typing import (
-    Any,
-    Dict,
     List,
-    Sequence,
+    Self, Sequence,
     Union,
 )
 
+from hexbytes import (
+    HexBytes,
+)
 from pydantic import (
     BaseModel,
     field_validator,
-    root_validator,
+    model_validator,
 )
 
-from hexbytes import HexBytes
 from .constants import (
     MAGIC_EOF_PREFIX,
     TERMINATOR,
@@ -55,11 +57,13 @@ class EOFHeader(BaseModel):
     # general field validation
 
     @field_validator("version", "kind_types", "kind_code", "kind_data", "terminator")
+    @classmethod
     def validate_single_byte_length(cls, value: bytes) -> bytes:
         assert len(value) == 1, f"field should be 1 byte in length, got {len(value)}"
         return value
 
     @field_validator("types_size", "num_code_sections", "data_size")
+    @classmethod
     def validate_two_byte_length(cls, value: bytes) -> bytes:
         assert len(value) == 2, f"field should be 2 bytes in length, got {len(value)}"
         return value
@@ -67,12 +71,14 @@ class EOFHeader(BaseModel):
     # field-specific validation
 
     @field_validator("magic")
+    @classmethod
     def validate_magic_value(cls, magic: bytes) -> bytes:
         if magic != MAGIC_EOF_PREFIX:
             raise ValueError("invalid `magic` value")
         return magic
 
     @field_validator("types_size")
+    @classmethod
     def validate_types_size_value(cls, types_size: bytes) -> bytes:
         int_value = int.from_bytes(types_size, "big")
         if int_value not in VALID_TYPES_SIZE or int_value % 4 != 0:
@@ -80,6 +86,7 @@ class EOFHeader(BaseModel):
         return types_size
 
     @field_validator("num_code_sections")
+    @classmethod
     def validate_num_code_sections(cls, num_code_sections: bytes) -> bytes:
         int_value = int.from_bytes(num_code_sections, "big")
         if int_value not in VALID_NUM_CODE_SECTIONS:
@@ -87,6 +94,7 @@ class EOFHeader(BaseModel):
         return num_code_sections
 
     @field_validator("code_size")
+    @classmethod
     def validate_code_size_values(cls, code_size: List[bytes]) -> List[bytes]:
         for size in code_size:
             int_value = int.from_bytes(size, "big")
@@ -95,6 +103,7 @@ class EOFHeader(BaseModel):
         return code_size
 
     @field_validator("data_size")
+    @classmethod
     def validate_data_size(cls, data_size: bytes) -> bytes:
         int_value = int.from_bytes(data_size, "big")
         if int_value not in VALID_DATA_SIZE:
@@ -102,6 +111,7 @@ class EOFHeader(BaseModel):
         return data_size
 
     @field_validator("terminator")
+    @classmethod
     def validate_terminator(cls, terminator: bytes) -> bytes:
         if terminator != TERMINATOR:
             raise ValueError("invalid terminator value")
@@ -135,6 +145,7 @@ class EOFTypesSection(BaseModel):
     max_stack_height: bytes
 
     @field_validator("inputs")
+    @classmethod
     def validate_inputs(cls, inputs: bytes) -> bytes:
         assert len(inputs) == 1, "inputs must be 1 byte in length"
 
@@ -145,6 +156,7 @@ class EOFTypesSection(BaseModel):
         return inputs
 
     @field_validator("outputs")
+    @classmethod
     def validate_outputs(cls, outputs: bytes) -> bytes:
         assert len(outputs) == 1, "outputs must be 1 byte in length"
 
@@ -155,6 +167,7 @@ class EOFTypesSection(BaseModel):
         return outputs
 
     @field_validator("max_stack_height")
+    @classmethod
     def validate_max_stack_height(cls, max_stack_height: bytes) -> bytes:
         assert len(max_stack_height) == 2, "max_stack_height must be 2 bytes in length"
 
@@ -179,6 +192,7 @@ class EOFBody(BaseModel):
     data_section: bytes
 
     @field_validator("code_section")
+    @classmethod
     def validate_code_section(cls, code_section: List[bytes]) -> List[bytes]:
         assert len(code_section) <= 1024, "number of code sections must not exceed 1024"
         return code_section
@@ -201,36 +215,31 @@ class EOFContainer(BaseModel):
     body: EOFBody
 
     @field_validator("header")
+    @classmethod
     def validate_header(cls, header: EOFHeader) -> EOFHeader:
         assert header.size >= 15, "header size must be at least 15 bytes"
         return header
 
-    @root_validator(skip_on_failure=True)
-    def validate_container(
-        cls,
-        values: Dict[str, Any],
-    ) -> Dict[str, Any]:
-        header = values.get("header")
-        body = values.get("body")
-
-        num_code_sections = int.from_bytes(header.num_code_sections, "big")
-        types_size = int.from_bytes(header.types_size, "big")
-        data_size = int.from_bytes(header.data_size, "big")
+    @model_validator(mode="after")
+    def validate_container(self) -> Self:
+        num_code_sections = int.from_bytes(self.header.num_code_sections, "big")
+        types_size = int.from_bytes(self.header.types_size, "big")
+        data_size = int.from_bytes(self.header.data_size, "big")
         sum_of_code_sizes = sum(
-            int.from_bytes(header.code_size[i], "big")
+            int.from_bytes(self.header.code_size[i], "big")
             for i in range(0, num_code_sections)
         )
         # validate container size
         expected_container_size = (
             13 + 2 * num_code_sections + types_size + sum_of_code_sizes + data_size
         )
-        if header.size + body.size != expected_container_size:
+        if self.header.size + self.body.size != expected_container_size:
             raise ValueError("invalid container size")
 
         # validate code sections
-        assert len(body.code_section) == types_size / 4
+        assert len(self.body.code_section) == types_size / 4
 
-        return values
+        return self
 
     def as_bytecode(self) -> bytes:
         return (

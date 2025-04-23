@@ -4,7 +4,9 @@ from typing import (
     Union,
 )
 
-from hexbytes import HexBytes
+from hexbytes import (
+    HexBytes,
+)
 
 
 def eof_obj_from_bytecode(
@@ -25,16 +27,16 @@ def eof_obj_from_bytecode(
     header["kind_code"] = bytecode[6:7]
     header["num_code_sections"] = num_code_sections
     header["code_size"] = [  # type: ignore
-        bytecode[9 + 2 * i: 11 + 2 * i] for i in range(0, num_code_sections_int)
+        bytecode[9 + 2 * i : 11 + 2 * i] for i in range(0, num_code_sections_int)
     ]
     header["kind_data"] = bytecode[
-        9 + 2 * num_code_sections_int: 10 + 2 * num_code_sections_int
+        9 + 2 * num_code_sections_int : 10 + 2 * num_code_sections_int
     ]
     header["data_size"] = bytecode[
-        10 + 2 * num_code_sections_int: 12 + 2 * num_code_sections_int
+        10 + 2 * num_code_sections_int : 12 + 2 * num_code_sections_int
     ]
     header["terminator"] = bytecode[
-        12 + 2 * num_code_sections_int: 13 + 2 * num_code_sections_int
+        12 + 2 * num_code_sections_int : 13 + 2 * num_code_sections_int
     ]
 
     body = {}
@@ -43,9 +45,9 @@ def eof_obj_from_bytecode(
     tsi = 13 + 2 * num_code_sections_int
     body["types_section"] = [
         {
-            "inputs": bytecode[tsi + 4 * i: tsi + 4 * i + 1],
-            "outputs": bytecode[tsi + 4 * i + 1: tsi + 4 * i + 2],
-            "max_stack_height": bytecode[tsi + 4 * i + 2: tsi + 4 * i + 4],
+            "inputs": bytecode[tsi + 4 * i : tsi + 4 * i + 1],
+            "outputs": bytecode[tsi + 4 * i + 1 : tsi + 4 * i + 2],
+            "max_stack_height": bytecode[tsi + 4 * i + 2 : tsi + 4 * i + 4],
         }
         for i in range(num_code_sections_int)
     ]
@@ -56,14 +58,14 @@ def eof_obj_from_bytecode(
     code_section = []
     for i in range(num_code_sections_int):
         code_section.append(
-            bytecode[csi: csi + int.from_bytes(header["code_size"][i], "big")]  # type: ignore  # noqa: E501
+            bytecode[csi : csi + int.from_bytes(header["code_size"][i], "big")]  # type: ignore  # noqa: E501
         )
         csi = csi + int.from_bytes(header["code_size"][i], "big")  # type: ignore
 
     body["code_section"] = code_section  # type: ignore
 
     # remaining bytes are data section
-    data_section = bytecode[csi:csi + int.from_bytes(header["data_size"], "big")]
+    data_section = bytecode[csi : csi + int.from_bytes(header["data_size"], "big")]
 
     # extra bit of validation that should otherwise bubble up to the container size
     # check but this is a nice sanity check
